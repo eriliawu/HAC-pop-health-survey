@@ -1,0 +1,2126 @@
+-----------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  H:\apps\xp\desktop\HAC-pop-health-survey\HAC-pop-health-survey_data_cleaning_log.log
+  log type:  text
+ opened on:  13 Aug 2018, 14:44:07
+
+. import delimited "raw_data\KEF__HAC Population Health Survey 2017-07-26 - responses downloaded 2017-08-21 .csv", clear
+(73 vars, 353 obs)
+
+. 
+. *** cleaning data
+. * make string vars lower case
+. foreach var in datecollected village interviewername language ///
+> gender yearsofresidency monthsawayyn monthsawaywhich monthsawaylocations ///
+> monthsawayreasons monthsawayreasonsother maritalstatus multiplewiveshusband ///
+> multiplewiveswife educationlevel incomesources ///
+> incomesourcesother newssource watersource watersourceother healthcareaccessed ///
+> healthcarechildren healthcarelocation healthcarelocationfrequent ///
+> healthcarelocationfrequentreason healthcaremissed healthcaremissedreason ///
+> healthcarelast healthcarelastlocation healthcarelasttransport ///
+> healthcarelasttransporttime familyplanningyn ///
+> familyplanningwhynot familyplanninguse familyplanningpreferred familyplanningpreferredyn ///
+> familyplanningpreferredwhynot hivdiscussyn hivtestyn hivtestwhynot hivtestlast ///
+> hivtestlastlocation hivtestresults artstartyn artstartwhynot artstartlocation ///
+> artcurrent artcurrentwhynot artlocation artlocationtype artlocationreason artmissedyn ///
+> artmissedreason viralloadyn viralloadlast viralloadlocation viralloadresults viralloadtime ///
+> viralloadexplain hivtreatments eqmobility eqselfcare eqactivities eqpain eqanxiety {
+  2.         replace `var'=lower(`var')
+  3. }
+(0 real changes made)
+(352 real changes made)
+(353 real changes made)
+(353 real changes made)
+(353 real changes made)
+(1 real change made)
+(353 real changes made)
+(126 real changes made)
+(97 real changes made)
+(119 real changes made)
+(15 real changes made)
+(353 real changes made)
+(117 real changes made)
+(109 real changes made)
+(351 real changes made)
+(298 real changes made)
+(70 real changes made)
+(330 real changes made)
+(352 real changes made)
+(12 real changes made)
+(4 real changes made)
+(80 real changes made)
+(348 real changes made)
+(199 real changes made)
+(347 real changes made)
+(353 real changes made)
+(130 real changes made)
+(252 real changes made)
+(343 real changes made)
+(340 real changes made)
+(145 real changes made)
+(352 real changes made)
+(113 real changes made)
+(128 real changes made)
+(156 real changes made)
+(353 real changes made)
+(19 real changes made)
+(353 real changes made)
+(347 real changes made)
+(11 real changes made)
+(331 real changes made)
+(327 real changes made)
+(327 real changes made)
+(332 real changes made)
+(4 real changes made)
+(98 real changes made)
+(98 real changes made)
+(1 real change made)
+(96 real changes made)
+(96 real changes made)
+(96 real changes made)
+(98 real changes made)
+(44 real changes made)
+(101 real changes made)
+(62 real changes made)
+(72 real changes made)
+(72 real changes made)
+(18 real changes made)
+(44 real changes made)
+(318 real changes made)
+(349 real changes made)
+(348 real changes made)
+(350 real changes made)
+(350 real changes made)
+(351 real changes made)
+
+. .
+
+. 
+. count //353 obs in total
+  353
+
+. foreach var of varlist datecollected-eqscale { // switch var names and labels
+  2.         local lab: var label `var'
+  3.         rename `var' `lab'
+  4.         label var `lab' "`var'"
+  5. }
+
+. .
+
+. 
+. * convert some string vars to numeric values
+. * the one that may be of analytical interest later
+. tab Gender //create new dummy var female
+
+     gender |      Freq.     Percent        Cum.
+------------+-----------------------------------
+     female |        190       53.82       53.82
+       male |        163       46.18      100.00
+------------+-----------------------------------
+      Total |        353      100.00
+
+. gen female=(Gender=="female")
+
+. replace female=0 if missing(female)
+(0 real changes made)
+
+. tab female Gender
+
+           |        gender
+    female |    female       male |     Total
+-----------+----------------------+----------
+         0 |         0        163 |       163 
+         1 |       190          0 |       190 
+-----------+----------------------+----------
+     Total |       190        163 |       353 
+
+
+. 
+. tab YearsOfRes //create new categorical var
+
+yearsofresi |
+      dency |      Freq.     Percent        Cum.
+------------+-----------------------------------
+  1-4 years |        103       29.18       29.18
+  10+ years |        145       41.08       70.25
+  5-9 years |         79       22.38       92.63
+    <1 year |         25        7.08       99.72
+ don't know |          1        0.28      100.00
+------------+-----------------------------------
+      Total |        353      100.00
+
+. replace YearsOfResidency="1" if YearsOfResidency=="<1 year"
+(25 real changes made)
+
+. replace YearsOfResidency="2" if YearsOfResidency=="1-4 years"
+(103 real changes made)
+
+. replace YearsOfResidency="3" if YearsOfResidency=="5-9 years"
+(79 real changes made)
+
+. replace YearsOfResidency="4" if YearsOfResidency=="10+ years"
+(145 real changes made)
+
+. replace YearsOfResidency="99" if YearsOfResidency=="don't know"
+(1 real change made)
+
+. destring YearsOfRes, replace
+YearsOfResidency: all characters numeric; replaced as byte
+
+. label define residency 1 "<1 year" 2 "1-4 years" 3 "5-9 years" 4 "10+ years" 99 "dont know", replace
+
+. label values YearsOfRes residency
+
+. 
+. replace MonthsAwayYN="1" if MonthsAwayYN=="yes"
+(128 real changes made)
+
+. replace MonthsAwayYN="0" if MonthsAwayYN=="no"
+(225 real changes made)
+
+. destring MonthsAwayYN, replace
+MonthsAwayYN: all characters numeric; replaced as byte
+
+. 
+. tab MonthsAwayWhich
+
+                        monthsawaywhich |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                  april |          7        5.56        5.56
+                         april,december |          1        0.79        6.35
+                             april,june |          2        1.59        7.94
+                              april,mar |          1        0.79        8.73
+                              april,may |          1        0.79        9.52
+                    april,may,june,july |          1        0.79       10.32
+                                 august |          4        3.17       13.49
+                        august,december |          1        0.79       14.29
+                                    dec |          1        0.79       15.08
+                               december |          9        7.14       22.22
+                         december,april |          1        0.79       23.02
+                           december,jan |          1        0.79       23.81
+                   december,jan,feb,mar |          1        0.79       24.60
+                                    feb |          1        0.79       25.40
+                      feb,mar,april,may |          1        0.79       26.19
+                                    jan |          6        4.76       30.95
+               jan,april,august,october |          1        0.79       31.75
+                         jan,april,july |          1        0.79       32.54
+      jan,april,july,september,december |          1        0.79       33.33
+                          jan,feb,april |          1        0.79       34.13
+jan,feb,april,mar,may,june,july,septe.. |          1        0.79       34.92
+                            jan,feb,mar |          2        1.59       36.51
+                 jan,june,may,mar,april |          1        0.79       37.30
+                  jan,mar,may,feb,april |          1        0.79       38.10
+jan,mar,may,july,september,november,a.. |          1        0.79       38.89
+jan,mar,may,july,september,november,a.. |          1        0.79       39.68
+jan,mar,may,july,september,november,f.. |          6        4.76       44.44
+jan,mar,may,july,september,november,f.. |          1        0.79       45.24
+                            jan,may,aug |          1        0.79       46.03
+                                   july |         12        9.52       55.56
+                            july,august |          4        3.17       58.73
+                                   june |          8        6.35       65.08
+                     june,mar,april,may |          1        0.79       65.87
+                      june,mar,november |          1        0.79       66.67
+                                    mar |          4        3.17       69.84
+                              mar,april |          1        0.79       70.63
+                          mar,april,may |          1        0.79       71.43
+                     mar,april,may,june |          1        0.79       72.22
+         mar,april,may,june,july,august |          1        0.79       73.02
+                   mar,august,july,june |          1        0.79       73.81
+mar,jan,may,july,september,november,d.. |          1        0.79       74.60
+                               mar,june |          2        1.59       76.19
+            mar,june,december,september |          1        0.79       76.98
+                           mar,june,feb |          1        0.79       77.78
+                       mar,june,october |          1        0.79       78.57
+            mar,june,september,december |          1        0.79       79.37
+                     mar,may,april,june |          1        0.79       80.16
+mar,may,jan,september,november,feb,ju.. |          1        0.79       80.95
+mar,may,july,september,november,decem.. |          1        0.79       81.75
+                                    may |          9        7.14       88.89
+                              may,april |          1        0.79       89.68
+                      may,april,october |          1        0.79       90.48
+                           may,december |          1        0.79       91.27
+may,july,september,november,june,august |          1        0.79       92.06
+                           may,november |          1        0.79       92.86
+                                october |          1        0.79       93.65
+                           october,july |          1        0.79       94.44
+                     october,july,april |          1        0.79       95.24
+                              september |          3        2.38       97.62
+             september,october,november |          3        2.38      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        126      100.00
+
+. gen MonthsAwayJan=1 if strmatch(MonthsAwayWhich, "*jan*")
+(324 missing values generated)
+
+. gen MonthsAwayFeb=1 if strmatch(MonthsAwayWhich, "*feb*")
+(332 missing values generated)
+
+. gen MonthsAwayMar=1 if strmatch(MonthsAwayWhich, "*mar*")
+(315 missing values generated)
+
+. gen MonthsAwayApr=1 if strmatch(MonthsAwayWhich, "*apr*")
+(310 missing values generated)
+
+. gen MonthsAwayMay=1 if strmatch(MonthsAwayWhich, "*may*")
+(315 missing values generated)
+
+. gen MonthsAwayJune=1 if strmatch(MonthsAwayWhich, "*jun*")
+(315 missing values generated)
+
+. gen MonthsAwayJuly=1 if strmatch(MonthsAwayWhich, "*jul*")
+(316 missing values generated)
+
+. gen MonthsAwayAug=1 if strmatch(MonthsAwayWhich, "*aug*")
+(327 missing values generated)
+
+. gen MonthsAwaySep=1 if strmatch(MonthsAwayWhich, "*sep*")
+(330 missing values generated)
+
+. gen MonthsAwayOct=1 if strmatch(MonthsAwayWhich, "*oct*")
+(331 missing values generated)
+
+. gen MonthsAwayNov=1 if strmatch(MonthsAwayWhich, "*nov*")
+(335 missing values generated)
+
+. gen MonthsAwayDec=1 if strmatch(MonthsAwayWhich, "*dec*")
+(322 missing values generated)
+
+. foreach month in Jan Feb Mar Apr May June July Aug Sep Oct Nov Dec {
+  2.         replace MonthsAway`month'=0 if missing(MonthsAway`month')|MonthsAwayYN==0
+  3. }
+(324 real changes made)
+(332 real changes made)
+(315 real changes made)
+(310 real changes made)
+(315 real changes made)
+(315 real changes made)
+(316 real changes made)
+(327 real changes made)
+(330 real changes made)
+(331 real changes made)
+(335 real changes made)
+(322 real changes made)
+
+. .
+
+. 
+. * reasons why villagers were away
+. tab MonthsAwayReasons // fishing, friends/family/social, farm, other work, Healthcare
+
+                      monthsawayreasons |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                          do other work |         14       11.76       11.76
+     do other work,visit friends/family |          2        1.68       13.45
+                                farming |          2        1.68       15.13
+                  farming,do other work |          3        2.52       17.65
+farming,do other work,visit friends/f.. |          1        0.84       18.49
+                                fishing |         10        8.40       26.89
+           fishing,visit friends/family |          1        0.84       27.73
+                   to access healthcare |          5        4.20       31.93
+to access healthcare,visit friends/fa.. |          1        0.84       32.77
+                    visit family member |          1        0.84       33.61
+visit family member,get health care o.. |          1        0.84       34.45
+                   visit friends/family |         72       60.50       94.96
+     visit friends/family,do other work |          2        1.68       96.64
+           visit friends/family,farming |          2        1.68       98.32
+visit friends/family,to access health.. |          2        1.68      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        119      100.00
+
+. tab MonthsAwayReasonsOther // religious
+
+     monthsawayreasonsother |      Freq.     Percent        Cum.
+----------------------------+-----------------------------------
+                   building |          1        5.00        5.00
+                    burrial |          1        5.00       10.00
+               for marriage |          1        5.00       15.00
+      harvesting palm trees |          1        5.00       20.00
+             he is a driver |          1        5.00       25.00
+    his family is in masaka |          1        5.00       30.00
+                     saloon |          1        5.00       35.00
+           scarcity of fish |          1        5.00       40.00
+     spread the word of god |          1        5.00       45.00
+          studying religion |          1        5.00       50.00
+       taking fish to congo |          1        5.00       55.00
+   thats were the family is |          1        5.00       60.00
+     to be with the husband |          1        5.00       65.00
+              to give birth |          1        5.00       70.00
+             to see husband |          1        5.00       75.00
+        visit my other home |          1        5.00       80.00
+was working in the palm oil |          1        5.00       85.00
+              wedding party |          1        5.00       90.00
+      went with her husband |          1        5.00       95.00
+       working in the hotel |          1        5.00      100.00
+----------------------------+-----------------------------------
+                      Total |         20      100.00
+
+. gen MonthsAwayFishing=1 if strmatch(MonthsAwayReasons, "*fish*")|strmatch(MonthsAwayReasonsOther, "*fish*")
+(340 missing values generated)
+
+. gen MonthsAwaySocial=1 if strmatch(MonthsAwayReasons, "*family*")|strmatch(MonthsAwayReasonsOther, "*marriage*") ///
+>         |strmatch(MonthsAwayReasonsOther, "*husband*")|strmatch(MonthsAwayReasonsOther, "*family*") ///
+>         |strmatch(MonthsAwayReasonsOther, "*burrial*")|strmatch(MonthsAwayReasonsOther, "*wedding*") ///
+>         |strmatch(MonthsAwayReasonsOther, "*home*")
+(263 missing values generated)
+
+. gen MonthsAwayFarming=1 if strmatch(MonthsAwayReasons, "*farm*")|strmatch(MonthsAwayReasonsOther, "*palm*")
+(345 missing values generated)
+
+. gen MonthsAwayOtherWork=1 if strmatch(MonthsAwayReasons, "*other work*") ///
+>         |strmatch(MonthsAwayReasonsOther, "*hotel*")|strmatch(MonthsAwayReasonsOther, "*driver*") ///
+>         |strmatch(MonthsAwayReasonsOther, "*building*")
+(331 missing values generated)
+
+. gen MonthsAwayHealth=1 if strmatch(MonthsAwayReasons, "*health*")|strmatch(MonthsAwayReasonsOther, "*birth*")
+(344 missing values generated)
+
+. gen MonthsAwayReligion=1 if strmatch(MonthsAwayReasonsOther, "*god*")|strmatch(MonthsAwayReasonsOther, "*religion*")
+(351 missing values generated)
+
+. foreach reason in Fishing Social Farming OtherWork Health Religion {
+  2.         replace MonthsAway`reason'=0 if missing(MonthsAway`reason')
+  3. }
+(340 real changes made)
+(263 real changes made)
+(345 real changes made)
+(331 real changes made)
+(344 real changes made)
+(351 real changes made)
+
+. .
+
+. 
+. * multiple wives
+. foreach var in Husband Wife {
+  2.         replace MultipleWives`var'="1" if MultipleWives`var'=="yes"
+  3.         replace MultipleWives`var'="0" if MultipleWives`var'=="no"
+  4.         destring MultipleWives`var', replace
+  5. }
+(40 real changes made)
+(77 real changes made)
+MultipleWivesHusband: all characters numeric; replaced as byte
+(236 missing values generated)
+(38 real changes made)
+(71 real changes made)
+MultipleWivesWife: all characters numeric; replaced as byte
+(244 missing values generated)
+
+. .
+
+. 
+. *** july 30
+. * edu level
+. tab EducationLevel // primary-->o level-->a level-->tech sch-->uni/above
+
+    educationlevel |      Freq.     Percent        Cum.
+-------------------+-----------------------------------
+              none |         39       11.11       11.11
+   nursing college |          1        0.28       11.40
+           primary |        220       62.68       74.07
+secondary advanced |         15        4.27       78.35
+secondary ordinary |         71       20.23       98.58
+  technical school |          5        1.42      100.00
+-------------------+-----------------------------------
+             Total |        351      100.00
+
+. replace EducationLevel="1" if EducationLevel=="none"
+(39 real changes made)
+
+. replace EducationLevel="2" if EducationLevel=="primary"
+(220 real changes made)
+
+. replace EducationLevel="3" if EducationLevel=="secondary ordinary"
+(71 real changes made)
+
+. replace EducationLevel="4" if EducationLevel=="secondary advanced"
+(15 real changes made)
+
+. replace EducationLevel="5" if EducationLevel=="technical school"|EducationLevel=="nursing college"
+(6 real changes made)
+
+. destring EducationLevel, replace
+EducationLevel: all characters numeric; replaced as byte
+(2 missing values generated)
+
+. 
+. * income source
+. * combine "fish" and "fish processing"
+. tab IncomeSources // farming, fishing related, small business, cooking, burning charcoal, govt, casual labor, retired
+
+                          incomesources |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                       burning charcoal |          1        0.34        0.34
+                           casual labor |         24        8.05        8.39
+                   casual labor,farming |          1        0.34        8.72
+      casual labor,fishing,selling fish |          1        0.34        9.06
+     casual labor,selling in the market |          1        0.34        9.40
+                                cooking |         14        4.70       14.09
+  cooking,burning charcoal,casual labor |          1        0.34       14.43
+                                farming |         67       22.48       36.91
+               farming,burning charcoal |          1        0.34       37.25
+                   farming,casual labor |          2        0.67       37.92
+farming,casual labor,selling fish,fis.. |          1        0.34       38.26
+                        farming,fishing |          5        1.68       39.93
+           farming,fishing,selling fish |          1        0.34       40.27
+        farming,run a bar or restaurant |          2        0.67       40.94
+                   farming,selling fish |          2        0.67       41.61
+          farming,selling in the market |          5        1.68       43.29
+                        fish processing |          5        1.68       44.97
+   fish processing,farming,selling fish |          1        0.34       45.30
+           fish processing,selling fish |          1        0.34       45.64
+                                fishing |         72       24.16       69.80
+                   fishing,casual labor |          1        0.34       70.13
+                        fishing,farming |         15        5.03       75.17
+       fishing,farming,burning charcoal |          1        0.34       75.50
+           fishing,farming,casual labor |          1        0.34       75.84
+        fishing,farming,fish processing |          1        0.34       76.17
+fishing,farming,run a bar or restaurant |          1        0.34       76.51
+           fishing,farming,selling fish |          1        0.34       76.85
+                   fishing,selling fish |          2        0.67       77.52
+fishing,selling fish,farming,fish pro.. |          1        0.34       77.85
+fishing,selling in the market,farming.. |          1        0.34       78.19
+                                retired |         12        4.03       82.21
+                run a bar or restaurant |         23        7.72       89.93
+run a bar or restaurant,burning charc.. |          1        0.34       90.27
+        run a bar or restaurant,farming |          1        0.34       90.60
+run a bar or restaurant,selling in th.. |          1        0.34       90.94
+    running a bar or restaurant,cooking |          1        0.34       91.28
+                           selling fish |          8        2.68       93.96
+                   selling fish,cooking |          1        0.34       94.30
+selling fish,selling in the market,fa.. |          2        0.67       94.97
+                  selling in the market |          9        3.02       97.99
+ selling in the market,burning charcoal |          1        0.34       98.32
+     selling in the market,casual labor |          2        0.67       98.99
+          selling in the market,farming |          3        1.01      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        298      100.00
+
+. tab IncomeSourcesOther // driving, other manual labor, other income sources, unemployed, housewife, 
+
+       incomesourcesother |      Freq.     Percent        Cum.
+--------------------------+-----------------------------------
+                   barber |          6        8.57        8.57
+                carpenter |          1        1.43       10.00
+      collecting firewood |          2        2.86       12.86
+                  cooking |          1        1.43       14.29
+                  driving |          1        1.43       15.71
+  driving motorcycle taxi |          4        5.71       21.43
+   driving motorcyle taxi |          1        1.43       22.86
+                drug shop |          1        1.43       24.29
+                 gambling |          1        1.43       25.71
+                housewife |          4        5.71       31.43
+            making brooms |          2        2.86       34.29
+             mobile money |          1        1.43       35.71
+ mobile money,retail shop |          1        1.43       37.14
+              retail shop |         24       34.29       71.43
+    selling at the market |          1        1.43       72.86
+         selling charcoal |          2        2.86       75.71
+          selling clothes |          1        1.43       77.14
+tailoring,selling clothes |          1        1.43       78.57
+               unemployed |          7       10.00       88.57
+          washing clothes |          8       11.43      100.00
+--------------------------+-----------------------------------
+                    Total |         70      100.00
+
+. gen IncomeFarm=(strmatch(IncomeSources, "*farm*"))
+
+. gen IncomeFish=(strmatch(IncomeSources, "*fishing*")|strmatch(IncomeSources, "*processing*") ///
+>         |strmatch(IncomeSources, "*selling fish*"))
+
+. gen IncomeSB=(strmatch(IncomeSources, "*run*")|strmatch(IncomeSources, "*market*") ///
+>         |strmatch(IncomeSourcesOther, "*barber*")|strmatch(IncomeSourcesOther, "*carpenter*") ///
+>         |strmatch(IncomeSourcesOther, "*drug*")|strmatch(IncomeSourcesOther, "*retail*") ///
+>         |strmatch(IncomeSourcesOther, "*market*")|strmatch(IncomeSourcesOther, "*mobile money*") ///
+>         |strmatch(IncomeSourcesOther, "*tailor*")|strmatch(IncomeSourcesOther, "*selling clothes*"))
+
+. gen IncomeCasual=(strmatch(IncomeSources, "*cook*")|strmatch(IncomeSourcesOther, "*firewood*") ///
+>         |strmatch(IncomeSourcesOther, "*driving*")|strmatch(IncomeSourcesOther, "*brooms*") ///
+>         |strmatch(IncomeSourcesOther, "*cook*")|strmatch(IncomeSourcesOther, "*washing*"))
+
+. gen IncomeCharcoal=(strmatch(IncomeSources, "*charcoal*")|strmatch(IncomeSourcesOther, "*charcoal*"))
+
+. gen IncomeGovt=(strmatch(IncomeSources, "*goverment*"))
+
+. gen IncomeNW=(strmatch(IncomeSources, "*retired*")|strmatch(IncomeSources, "*housewife*") ///
+>         |strmatch(IncomeSourcesOther, "*gambling*"))
+
+. foreach var in Farm Fish SB Casual Charcoal Govt NW {
+  2.         replace Income`var'=0 if missing(Income`var')
+  3. }
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. .
+
+. label var IncomeSB "small business"
+
+. label var IncomeNW "not working (retired, unemployed, housewife)"
+
+. 
+. * NewsSource/WaterSource: not of analytical interest for now
+. 
+. *Healthcare
+. tab HealthcareAcc
+
+healthcareaccess |
+              ed |      Freq.     Percent        Cum.
+-----------------+-----------------------------------
+         0 times |         46       13.07       13.07
+       1-4 times |        198       56.25       69.32
+10 or more times |         34        9.66       78.98
+       5-9 times |         70       19.89       98.86
+      don't know |          4        1.14      100.00
+-----------------+-----------------------------------
+           Total |        352      100.00
+
+. tab HealthcareChildren
+
+         healthcarechildren |      Freq.     Percent        Cum.
+----------------------------+-----------------------------------
+                    0 times |         17        5.52        5.52
+                  1-4 times |        125       40.58       46.10
+           10 or more times |         35       11.36       57.47
+                  5-9 times |         51       16.56       74.03
+                 don't know |         10        3.25       77.27
+               don??t know |          1        0.32       77.60
+no children in my household |         69       22.40      100.00
+----------------------------+-----------------------------------
+                      Total |        308      100.00
+
+. 
+. replace HealthcareAcc="0" if HealthcareAcc=="0 times"
+(46 real changes made)
+
+. replace HealthcareAcc="1" if HealthcareAcc=="1-4 times"
+(198 real changes made)
+
+. replace HealthcareAcc="2" if HealthcareAcc=="5-9 times"
+(70 real changes made)
+
+. replace HealthcareAcc="3" if HealthcareAcc=="10 or more times"
+(34 real changes made)
+
+. replace HealthcareAcc="99" if HealthcareAcc=="don't know"
+(4 real changes made)
+
+. destring HealthcareAcc, replace
+HealthcareAccessed: all characters numeric; replaced as byte
+(1 missing value generated)
+
+. label define health 0 "0 times" 1 "1-4 times" 2 "5-9 times" 3 "10 or more" 99 "don't know", replace
+
+. label values HealthcareAcc health
+
+. 
+. replace HealthcareChildren="0" if HealthcareChildren=="0 times"
+(17 real changes made)
+
+. replace HealthcareChildren="1" if HealthcareChildren=="1-4 times"
+(125 real changes made)
+
+. replace HealthcareChildren="2" if HealthcareChildren=="5-9 times"
+(51 real changes made)
+
+. replace HealthcareChildren="3" if HealthcareChildren=="10 or more times"
+(35 real changes made)
+
+. replace HealthcareChildren="99" if strmatch(HealthcareChildren, "*know*")
+(11 real changes made)
+
+. replace HealthcareChildren="98" if strmatch(HealthcareChildren, "*no children*")
+(69 real changes made)
+
+. destring HealthcareChildren, replace
+HealthcareChildren: all characters numeric; replaced as byte
+(45 missing values generated)
+
+. label define health 0 "0 times" 1 "1-4 times" 2 "5-9 times" 3 "10 or more" 99 "don't know" 98 "no children in household", replace
+
+. label values HealthcareChildren health
+
+. 
+. * Healthcare location
+. tab HealthcareLocation //leave alone for now; health center, hospital, healer, drug shop/clinic, self-medicate, mobile, VHT, birth atte
+> ndant
+
+                     healthcarelocation |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+            "health centers 2, 3, or 4" |          1        0.29        0.29
+"health centers 2, 3, or 4",drug shop.. |          2        0.57        0.86
+            "health centre 2, 3, oba 4" |        121       34.77       35.63
+"health centre 2, 3, oba 4",drug shop.. |         63       18.10       53.74
+"health centre 2, 3, oba 4",drug shop.. |          4        1.15       54.89
+"health centre 2, 3, oba 4",drug shop.. |         25        7.18       62.07
+"health centre 2, 3, oba 4",drug shop.. |          1        0.29       62.36
+"health centre 2, 3, oba 4",drug shop.. |          1        0.29       62.64
+"health centre 2, 3, oba 4",drug shop.. |          1        0.29       62.93
+"health centre 2, 3, oba 4",drug shop.. |          5        1.44       64.37
+"health centre 2, 3, oba 4",drug shop.. |          2        0.57       64.94
+"health centre 2, 3, oba 4",hospitals.. |          4        1.15       66.09
+"health centre 2, 3, oba 4",hospitals.. |          1        0.29       66.38
+"health centre 2, 3, oba 4",hospitals.. |          1        0.29       66.67
+"health centre 2, 3, oba 4",mobile ou.. |          9        2.59       69.25
+"health centre 2, 3, oba 4",mobile ou.. |          1        0.29       69.54
+"health centre 2, 3, oba 4",mobile ou.. |          1        0.29       69.83
+"health centre 2, 3, oba 4",mobile ou.. |          1        0.29       70.11
+"health centre 2, 3, oba 4",mobile ou.. |          1        0.29       70.40
+"health centre 2, 3, oba 4",mobile ou.. |          2        0.57       70.98
+"health centre 2, 3, oba 4",mobile ou.. |          1        0.29       71.26
+"health centre 2, 3, oba 4",mobile ou.. |          1        0.29       71.55
+"health centre 2, 3, oba 4",self medi.. |          4        1.15       72.70
+"health centre 2, 3, oba 4",self medi.. |          2        0.57       73.28
+"health centre 2, 3, oba 4",self medi.. |          1        0.29       73.56
+"health centre 2, 3, oba 4",self medi.. |          2        0.57       74.14
+"health centre 2, 3, oba 4",tradition.. |          1        0.29       74.43
+"health centre 2, 3, oba 4",tradition.. |          1        0.29       74.71
+"health centre 2, 3, oba 4",tradition.. |          1        0.29       75.00
+                      drug shops/clinic |         28        8.05       83.05
+drug shops/clinic,"health centers 2, .. |          1        0.29       83.33
+drug shops/clinic,"health centre 2, 3.. |         10        2.87       86.21
+drug shops/clinic,"health centre 2, 3.. |          5        1.44       87.64
+drug shops/clinic,"health centre 2, 3.. |          1        0.29       87.93
+drug shops/clinic,"health centre 2, 3.. |          2        0.57       88.51
+drug shops/clinic,hospitals (eddwaliro) |          1        0.29       88.79
+drug shops/clinic,hospitals (eddwalir.. |          1        0.29       89.08
+drug shops/clinic,mobile outreach,"he.. |          1        0.29       89.37
+drug shops/clinic,self medicate at home |          1        0.29       89.66
+drug shops/clinic,self medicate at ho.. |          1        0.29       89.94
+drug shops/clinic,self medicate at ho.. |          1        0.29       90.23
+drug shops/clinic,self medicate at ho.. |          1        0.29       90.52
+drug shops/clinic,self medicate at ho.. |          1        0.29       90.80
+drug shops/clinic,vht (village health.. |          1        0.29       91.09
+                 health centre emissary |          1        0.29       91.38
+                  hospitals (eddwaliro) |          4        1.15       92.53
+hospitals (eddwaliro),"health centre .. |          1        0.29       92.82
+hospitals (eddwaliro),"health centre .. |          1        0.29       93.10
+hospitals (eddwaliro),drug shops/clinic |          3        0.86       93.97
+                        mobile outreach |          3        0.86       94.83
+mobile outreach,"health centre 2, 3, .. |          4        1.15       95.98
+mobile outreach,"health centre 2, 3, .. |          3        0.86       96.84
+mobile outreach,"health centre 2, 3, .. |          1        0.29       97.13
+mobile outreach,"health centre 2, 3, .. |          1        0.29       97.41
+                  self medicate at home |          3        0.86       98.28
+self medicate at home,"health centre .. |          2        0.57       98.85
+self medicate at home,drug shops/clin.. |          1        0.29       99.14
+   traditional healer,drug shops/clinic |          1        0.29       99.43
+vht (village health team),"health cen.. |          1        0.29       99.71
+vht (village health team),drug shops/.. |          1        0.29      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        348      100.00
+
+. tab HealthcareLocationFrequent 
+
+             healthcarelocationfrequent |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                          bbanga clinic |          1        0.37        0.37
+                           bbeta clinic |          3        1.11        1.48
+                           bugoma h/c 2 |          2        0.74        2.21
+                            bugoma h/c2 |          4        1.48        3.69
+              bugoma siap, bbebe clinic |          1        0.37        4.06
+                           bukomansimbi |          1        0.37        4.43
+                             bumamgi hc |          1        0.37        4.80
+                            bumangi h/c |          1        0.37        5.17
+                           bumangi h/c2 |          2        0.74        5.90
+                             bumangi hc |          5        1.85        7.75
+                           bumangi hc 2 |          2        0.74        8.49
+                            bumangi hc2 |          2        0.74        9.23
+                   bumangihealth centre |          1        0.37        9.59
+                               bwendero |          1        0.37        9.96
+                           bwendero h/c |          1        0.37       10.33
+                         bwendero h/c 3 |          4        1.48       11.81
+                          bwendero h/c3 |         17        6.27       18.08
+                          bwendero h/c4 |          1        0.37       18.45
+                            bwendero hc |          7        2.58       21.03
+                          bwendero hc 3 |          1        0.37       21.40
+         bwendero hc, bweza ddajje hc 2 |          1        0.37       21.77
+           bwendero hc, entebbe, masaka |          1        0.37       22.14
+            bwendero hc, kalangala hc 4 |          1        0.37       22.51
+                           bwendero hc3 |          9        3.32       25.83
+            bwendero hc3, kalangala hc4 |          1        0.37       26.20
+   bwendero hc4, mulago hospital masaka |          1        0.37       26.57
+                 bwendero health center |          2        0.74       27.31
+               bwendero health center 3 |          5        1.85       29.15
+               bwendero health centre 3 |          1        0.37       29.52
+ bweza ddajje, bwendero health center 3 |          1        0.37       29.89
+                                 clinic |         13        4.80       34.69
+                       clinic at bbungo |          1        0.37       35.06
+                     clinic at bwendero |          1        0.37       35.42
+                          clinic bbanga |          1        0.37       35.79
+                       clinic in bugoma |          4        1.48       37.27
+                        clinic in bungo |          1        0.37       37.64
+                       clinic in buyiri |          1        0.37       38.01
+                     clinic in nakatiba |          1        0.37       38.38
+                       clinic in senero |          1        0.37       38.75
+                     clinic in the area |          1        0.37       39.11
+                          clinic senero |          1        0.37       39.48
+                                clinics |          1        0.37       39.85
+                                  clnic |          1        0.37       40.22
+                              ddajje hc |          1        0.37       40.59
+                        doesnt get sick |          1        0.37       40.96
+                    drug shop in buyiri |          1        0.37       41.33
+                                     hc |          1        0.37       41.70
+                          health center |          1        0.37       42.07
+                           health centr |          1        0.37       42.44
+                          health centre |         16        5.90       48.34
+                        health centre 3 |          1        0.37       48.71
+                         health centre2 |          1        0.37       49.08
+                           healthcentre |          2        0.74       49.82
+                 i dnt go for treatment |          1        0.37       50.18
+                   jjunju clinic masaka |          1        0.37       50.55
+                                kajansi |          1        0.37       50.92
+                        kalangala h/c 4 |          1        0.37       51.29
+                         kalangala h/c4 |          6        2.21       53.51
+                           kalangala hc |          8        2.95       56.46
+                         kalangala hc 4 |          1        0.37       56.83
+                          kalangala hc4 |          5        1.85       58.67
+         kalangala hc4, masaka hospital |          1        0.37       59.04
+              kalangala health center 4 |          1        0.37       59.41
+                                kibaale |          1        0.37       59.78
+                        kitovu hospital |          1        0.37       60.15
+                           lisa organic |          1        0.37       60.52
+                           living goods |          1        0.37       60.89
+                   living goods, bbanga |          1        0.37       61.25
+                                 masaka |          3        1.11       62.36
+                        masaka hospital |          4        1.48       63.84
+             masaka hospital and kitovu |          1        0.37       64.21
+                        masaka refferal |          1        0.37       64.58
+                           misanvu h/c4 |          1        0.37       64.94
+                                 mugoye |          4        1.48       66.42
+                               mugoye 3 |          1        0.37       66.79
+                             mugoye h/c |          3        1.11       67.90
+                           mugoye h/c 3 |          4        1.48       69.37
+                            mugoye h/c3 |          8        2.95       72.32
+                              mugoye hc |         20        7.38       79.70
+                            mugoye hc 3 |          1        0.37       80.07
+                 mugoye hc, siap bugoma |          1        0.37       80.44
+                             mugoye hc3 |          1        0.37       80.81
+                     mugoye hc3, bugoma |          1        0.37       81.18
+                mugoye hc3, bumangi hc2 |          1        0.37       81.55
+                     mugoye hc3, masaka |          1        0.37       81.92
+                  mugoye health centre3 |          1        0.37       82.29
+                             mugoyen hc |          1        0.37       82.66
+mulaba hc2, kalangala hc4, masaka hos.. |          1        0.37       83.03
+                mulaban health centre 2 |          1        0.37       83.39
+                               mulabana |          2        0.74       84.13
+                          mulabana h/c2 |          2        0.74       84.87
+                           mulabana hc2 |         13        4.80       89.67
+mulabana hc2, bwendero hc3, kalangala.. |          1        0.37       90.04
+                           mulabana hc3 |          2        0.74       90.77
+               mulabana health cemter 2 |          1        0.37       91.14
+                 mulabana health center |          1        0.37       91.51
+               mulabana health center 2 |          7        2.58       94.10
+               mulabana health center 3 |          1        0.37       94.46
+                mulabana health center2 |          3        1.11       95.57
+                 mulago hospital masaka |          1        0.37       95.94
+                        nakatiba clinic |          1        0.37       96.31
+                                  rakai |          1        0.37       96.68
+                          senero clinic |          3        1.11       97.79
+               shuhada clinic kalangala |          1        0.37       98.15
+                             siap bgoma |          1        0.37       98.52
+                            siap bugoma |          3        1.11       99.63
+                       vht living goods |          1        0.37      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        271      100.00
+
+. tab HealthcareLocationFrequentReason 
+
+       healthcarelocationfrequentreason |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                       close to my home |        125       36.02       36.02
+       close to my home,other (specify) |          2        0.58       36.60
+close to my home,services are better .. |          9        2.59       39.19
+close to my home,services are better .. |          6        1.73       40.92
+close to my home,services are better .. |          1        0.29       41.21
+close to my home,services are free or.. |         12        3.46       44.67
+close to my home,services are free or.. |          3        0.86       45.53
+close to my home,services are free or.. |          2        0.58       46.11
+close to my home,staff is friendly an.. |          1        0.29       46.40
+close to my home,staff is friendly an.. |          1        0.29       46.69
+close to my home,staff is friendly an.. |          1        0.29       46.97
+close to my home,staff is friendly an.. |          1        0.29       47.26
+                        other (specify) |          8        2.31       49.57
+       other (specify),close to my home |          1        0.29       49.86
+other (specify),close to my home,serv.. |          1        0.29       50.14
+other (specify),services are better t.. |          2        0.58       50.72
+  services are better than other places |         78       22.48       73.20
+services are better than other places.. |         12        3.46       76.66
+services are better than other places.. |          1        0.29       76.95
+services are better than other places.. |          6        1.73       78.67
+services are better than other places.. |          1        0.29       78.96
+services are better than other places.. |          5        1.44       80.40
+          services are free or low cost |         29        8.36       88.76
+services are free or low cost,close t.. |          5        1.44       90.20
+services are free or low cost,service.. |         11        3.17       93.37
+services are free or low cost,service.. |          2        0.58       93.95
+services are free or low cost,staff i.. |          1        0.29       94.24
+services are free or low cost,staff i.. |          1        0.29       94.52
+        staff is friendly and welcoming |          5        1.44       95.97
+staff is friendly and welcoming,close.. |          3        0.86       96.83
+staff is friendly and welcoming,close.. |          2        0.58       97.41
+staff is friendly and welcoming,other.. |          1        0.29       97.69
+staff is friendly and welcoming,servi.. |          6        1.73       99.42
+staff is friendly and welcoming,servi.. |          1        0.29       99.71
+staff is friendly and welcoming,servi.. |          1        0.29      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        347      100.00
+
+. 
+. replace HealthcareLocationFrequent="health center" if strmatch(HealthcareLocationFrequent, "* h/c*") ///
+>         |strmatch(HealthcareLocationFrequent, "* hc*")|strmatch(HealthcareLocationFrequent, "*health ce*") ///
+>         |strmatch(HealthcareLocationFrequent, "hc")|strmatch(HealthcareLocationFrequent, "*healthcentre*") ///
+>         |strmatch(HealthcareLocationFrequent, "*mugoye*")
+(202 real changes made)
+
+. replace HealthcareLocationFrequent="clinic/drug shop" if strmatch(HealthcareLocationFrequent, "*clinic*") ///
+>         |strmatch(HealthcareLocationFrequent, "*clnic*")|strmatch(HealthcareLocationFrequent, "*drug shop*")
+(40 real changes made)
+
+. replace HealthcareLocationFrequent="hospital" if strmatch(HealthcareLocationFrequent, "*hospital*")
+(7 real changes made)
+
+. replace HealthcareLocationFrequent="VHT" if strmatch(HealthcareLocationFrequent, "*vht*")
+(1 real change made)
+
+. replace HealthcareLocationFrequent="n/a" if strmatch(HealthcareLocationFrequent, "*get sick*") ///
+>         |strmatch(HealthcareLocationFrequent, "*treatment*") //need input from HAC staff
+(2 real changes made)
+
+. 
+. gen HealthcareLocReason1=(strmatch(HealthcareLocationFrequentReason, "*friendly*"))
+
+. gen HealthcareLocReason2=(strmatch(HealthcareLocationFrequentReason, "*free*"))
+
+. gen HealthcareLocReason3=(strmatch(HealthcareLocationFrequentReason, "*better*"))
+
+. gen HealthcareLocReason4=(strmatch(HealthcareLocationFrequentReason, "*close*"))
+
+. gen HealthcareLocReason5=(strmatch(HealthcareLocationFrequentReason, "*specify*"))
+
+. label var HealthcareLocReason1 "staff are friendly"
+
+. label var HealthcareLocReason2 "free/low cost services"
+
+. label var HealthcareLocReason3 "better services"
+
+. label var HealthcareLocReason4 "close to home"
+
+. label var HealthcareLocReason5 "other reason"
+
+. forvalues i=1/5 {
+  2.         replace HealthcareLocReason`i'=0 if HealthcareLocReason`i'==.
+  3. }
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+. .
+
+. 
+. * missed Healthcare
+. tab HealthcareMissed 
+
+healthcarem |
+      issed |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |        223       63.17       63.17
+        yes |        130       36.83      100.00
+------------+-----------------------------------
+      Total |        353      100.00
+
+. tab HealthcareLast
+
+         healthcarelast |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+         1-3 months ago |        101       28.61       28.61
+             don't know |         15        4.25       32.86
+             last month |        157       44.48       77.34
+ more than 4 months ago |         75       21.25       98.58
+never received services |          5        1.42      100.00
+------------------------+-----------------------------------
+                  Total |        353      100.00
+
+. replace HealthcareMissed="1" if HealthcareMissed=="yes"
+(130 real changes made)
+
+. replace HealthcareMissed="0" if HealthcareMissed=="no"
+(223 real changes made)
+
+. 
+. tab HealthcareMissedReason
+
+                 healthcaremissedreason |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                  caretaker is not home |          1        0.77        0.77
+                  ignorance/not knowing |          2        1.54        2.31
+    ignorance/not knowing,fear medicine |          1        0.77        3.08
+                           mild illness |          9        6.92       10.00
+                         self medicated |          2        1.54       11.54
+              supplies are out of stock |          4        3.08       14.62
+supplies are out of stock,self medica.. |          1        0.77       15.38
+supplies are out of stock,too expensive |          1        0.77       16.15
+                          too expensive |         96       73.85       90.00
+           too expensive,self medicated |          4        3.08       93.08
+too expensive,supplies are out of stock |          2        1.54       94.62
+                 too expensive,too weak |          1        0.77       95.38
+too expensive,transportation difficul.. |          4        3.08       98.46
+                               too weak |          2        1.54      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        130      100.00
+
+. gen MissHealthcareCost=(strmatch(HealthcareMissedReason, "*expensive*"))
+
+. gen MissHealthcareClinic=(strmatch(HealthcareMissedReason, "*out of stock*"))
+
+. gen MissHealthcareSelf=(strmatch(HealthcareMissedReason, "*ignorance*")|strmatch(HealthcareMissedReason, "*caretaker*") ///
+>         |strmatch(HealthcareMissedReason, "*fear*")|strmatch(HealthcareMissedReason, "*mild*") ///
+>         |strmatch(HealthcareMissedReason, "*self medi*")|strmatch(HealthcareMissedReason, "*weak*"))
+
+. gen MissHealthcareTransport=(strmatch(HealthcareMissedReason, "*transportation*"))
+
+. label var MissHealthcareClinic "supplies out of stock"
+
+. label var MissHealthcareSelf "reasons with patient him/herself: fear of meds, caretaker not home, etc."
+
+. 
+. replace HealthcareLast="1" if HealthcareLast=="last month"
+(157 real changes made)
+
+. replace HealthcareLast="2" if HealthcareLast=="1-3 months ago"
+(101 real changes made)
+
+. replace HealthcareLast="3" if HealthcareLast=="more than 4 months ago"
+(75 real changes made)
+
+. replace HealthcareLast="99" if HealthcareLast=="don't know"
+(15 real changes made)
+
+. replace HealthcareLast="98" if HealthcareLast=="never received services"
+(5 real changes made)
+
+. destring HealthcareLast, replace
+HealthcareLast: all characters numeric; replaced as byte
+
+. label var HealthcareLast "last time he/she missed Healthcare"
+
+. label define health 1 "last month" 2 "1-3 months ago" 3 "more than 4 months ago" 98 "never received services" 99 "don't know", replace
+
+. label values HealthcareLast health
+
+. 
+. tab HealthcareLastLocation 
+
+              healthcarelastlocation |      Freq.     Percent        Cum.
+-------------------------------------+-----------------------------------
+                    drug shop/clinic |          2        0.58        0.58
+                   drug shops/clinic |         78       22.67       23.26
+           health centre 2 or 3 or 4 |          2        0.58       23.84
+            health centre 2, 3, or 4 |        220       63.95       87.79
+        health officer at the ground |          1        0.29       88.08
+                           hospitals |         13        3.78       91.86
+                        living goods |          2        0.58       92.44
+                     mobile outreach |         20        5.81       98.26
+musawo wakinnansi oba musawo muganda |          1        0.29       98.55
+               self-medicate at home |          5        1.45      100.00
+-------------------------------------+-----------------------------------
+                               Total |        344      100.00
+
+. replace HealthcareLastLocation ="drug shop/clinic" if strmatch(HealthcareLastLocation, "*drug shop*")
+(78 real changes made)
+
+. replace HealthcareLastLocation ="health center" if strmatch(HealthcareLastLocation, "*health cent*")
+(222 real changes made)
+
+. replace HealthcareLastLocation ="mobile outreach" if strmatch(HealthcareLastLocation, "*ground*") ///
+>         |strmatch(HealthcareLastLocation, "*mobile*")
+(1 real change made)
+
+. replace HealthcareLastLocation ="hospital" if strmatch(HealthcareLastLocation, "*hospital*")
+(13 real changes made)
+
+. replace HealthcareLastLocation ="self medicate" if strmatch(HealthcareLastLocation, "*self*")
+(5 real changes made)
+
+. 
+. * transportation
+. tab HealthcareLastTransport 
+
+         healthcarelasttransport |      Freq.     Percent        Cum.
+---------------------------------+-----------------------------------
+                            boat |         29        8.53        8.53
+                   matatu / taxi |         25        7.35       15.88
+motorcycle / bicycle / boda boda |        172       50.59       66.47
+                         on foot |        110       32.35       98.82
+                           other |          4        1.18      100.00
+---------------------------------+-----------------------------------
+                           Total |        340      100.00
+
+. tab HealthcareLastTransportTime 
+
+healthcarelasttransp |
+             orttime |      Freq.     Percent        Cum.
+---------------------+-----------------------------------
+ 1 hour to 1?« hours |         42       12.46       12.46
+     2 hours or more |         42       12.46       24.93
+   ?« hour to 1 hour |        108       32.05       56.97
+          don't know |          5        1.48       58.46
+   less than ?« hour |        140       41.54      100.00
+---------------------+-----------------------------------
+               Total |        337      100.00
+
+. tab HealthcareLastTransportCost 
+
+healthcarel |
+asttranspor |
+      tcost |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |         78       26.00       26.00
+        500 |          1        0.33       26.33
+       1000 |          1        0.33       26.67
+       2000 |          2        0.67       27.33
+       3000 |          5        1.67       29.00
+       4000 |          8        2.67       31.67
+       5000 |         33       11.00       42.67
+       6000 |         37       12.33       55.00
+       6500 |          1        0.33       55.33
+       7000 |         17        5.67       61.00
+       8000 |         31       10.33       71.33
+      10000 |         27        9.00       80.33
+      12000 |          2        0.67       81.00
+      13000 |          3        1.00       82.00
+      14000 |          3        1.00       83.00
+      15000 |          9        3.00       86.00
+      16000 |          2        0.67       86.67
+      18000 |          2        0.67       87.33
+      20000 |         12        4.00       91.33
+      23000 |          2        0.67       92.00
+      24000 |          1        0.33       92.33
+      25000 |          3        1.00       93.33
+      30000 |         12        4.00       97.33
+      40000 |          1        0.33       97.67
+      50000 |          2        0.67       98.33
+      60000 |          4        1.33       99.67
+      70000 |          1        0.33      100.00
+------------+-----------------------------------
+      Total |        300      100.00
+
+. replace HealthcareLastTransport="1" if strmatch(HealthcareLastTransport, "*boat*")
+(29 real changes made)
+
+. replace HealthcareLastTransport="2" if strmatch(HealthcareLastTransport, "*taxi*")
+(25 real changes made)
+
+. replace HealthcareLastTransport="3" if strmatch(HealthcareLastTransport, "*motorcycle*")
+(172 real changes made)
+
+. replace HealthcareLastTransport="4" if strmatch(HealthcareLastTransport, "*foot*")
+(110 real changes made)
+
+. replace HealthcareLastTransport="98" if strmatch(HealthcareLastTransport, "*other*")
+(4 real changes made)
+
+. destring HealthcareLastTransport, replace
+HealthcareLastTransport: all characters numeric; replaced as byte
+(13 missing values generated)
+
+. label define transport 1 "boat" 2 "taxi" 3 "motorcycle/bike" 4 "on foot" 98 "other"
+
+. label values HealthcareLastTransport transport
+
+. 
+. replace HealthcareLastTransportTime="1" if strmatch(HealthcareLastTransportTime, "*less than*")
+(140 real changes made)
+
+. replace HealthcareLastTransportTime="2" if strmatch(HealthcareLastTransportTime, "*to 1 hour*")
+(108 real changes made)
+
+. replace HealthcareLastTransportTime="3" if strmatch(HealthcareLastTransportTime, "*1 hour to*")
+(42 real changes made)
+
+. replace HealthcareLastTransportTime="4" if strmatch(HealthcareLastTransportTime, "*2 hours or*")
+(42 real changes made)
+
+. replace HealthcareLastTransportTime="99" if strmatch(HealthcareLastTransportTime, "*don't know*")
+(5 real changes made)
+
+. destring HealthcareLastTransportTime, replace
+HealthcareLastTransportTime: all characters numeric; replaced as byte
+(16 missing values generated)
+
+. label define time 1 "<0.5 hr" 2 "0.5-1 hr" 3 "1-1.5 hrs" 4 ">2 hrs" 99 "don't know", replace
+
+. label values HealthcareLastTransportTime time
+
+. 
+. * family planning
+. tab FamilyPlanningYN 
+
+   familyplanningyn |      Freq.     Percent        Cum.
+--------------------+-----------------------------------
+don't know/not sure |         20        5.68        5.68
+                 no |        203       57.67       63.35
+                yes |        129       36.65      100.00
+--------------------+-----------------------------------
+              Total |        352      100.00
+
+. tab FamilyPlanningWhyNot
+
+                   familyplanningwhynot |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                     baby/breastfeeding |          3        2.65        2.65
+                              menopause |          7        6.19        8.85
+                             no partner |         26       23.01       31.86
+not available in the health centre or.. |          1        0.88       32.74
+       objections for religious reasons |          2        1.77       34.51
+                                  other |          3        2.65       37.17
+                               pregnant |          1        0.88       38.05
+                           side effects |         14       12.39       50.44
+                  we are not interested |         31       27.43       77.88
+       we are trying to produce a child |         25       22.12      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        113      100.00
+
+. replace FamilyPlanningYN="1" if FamilyPlanningYN=="yes"
+(129 real changes made)
+
+. replace FamilyPlanningYN="0" if FamilyPlanningYN=="no"
+(203 real changes made)
+
+. replace FamilyPlanningYN="99" if FamilyPlanningYN=="don't know/not sure"
+(20 real changes made)
+
+. destring FamilyPlanningYN, replace
+FamilyPlanningYN: all characters numeric; replaced as byte
+(1 missing value generated)
+
+. label var FamilyPlanningYN "use family planning methods"
+
+. label define planning 1 "yes" 2 "no" 99 "don't know/not sure", replace
+
+. label values FamilyPlanningYN planning
+
+. 
+. replace FamilyPlanningWhyNot="" if strmatch(FamilyPlanningWhyNot, "*baby*") ///
+>         |strmatch(FamilyPlanningWhyNot, "*menopause*")|strmatch(FamilyPlanningWhyNot, "*pregnant*") ///
+>         |strmatch(FamilyPlanningWhyNot, "*produce a child*")
+(36 real changes made)
+
+. 
+. * differentiate implant(impl&iud&tubal ligation) vs. injection(inj&pills)
+. * test statistical sig, short term v. long term
+. tab FamilyPlanningUse 
+
+  familyplanninguse |      Freq.     Percent        Cum.
+--------------------+-----------------------------------
+            condoms |         10        7.81        7.81
+condoms, moon beads |          1        0.78        8.59
+           implants |         35       27.34       35.94
+         injections |         68       53.13       89.06
+injections,implants |          1        0.78       89.84
+                iud |          4        3.13       92.97
+         moon beads |          1        0.78       93.75
+              pills |          4        3.13       96.88
+traditional methods |          1        0.78       97.66
+     tubal ligation |          1        0.78       98.44
+  withdrawal method |          2        1.56      100.00
+--------------------+-----------------------------------
+              Total |        128      100.00
+
+. tab FamilyPlanningPreferred 
+
+familyplanningprefe |
+               rred |      Freq.     Percent        Cum.
+--------------------+-----------------------------------
+            condoms |         16       10.26       10.26
+           implants |         62       39.74       50.00
+implants,injections |          1        0.64       50.64
+         injections |         53       33.97       84.62
+injections,implants |          3        1.92       86.54
+                iud |          6        3.85       90.38
+         moon beads |          2        1.28       91.67
+              pills |          3        1.92       93.59
+       tubaligation |          1        0.64       94.23
+          vasectomy |          2        1.28       95.51
+  withdrawal method |          7        4.49      100.00
+--------------------+-----------------------------------
+              Total |        156      100.00
+
+. gen FamilyPlanNatural=(strmatch(FamilyPlanningUse, "*moon*")|strmatch(FamilyPlanningUse, "*tradit*")) ///
+>         |strmatch(FamilyPlanningUse, "*withdrawal*")
+
+. gen FamilyPlanCondom=(strmatch(FamilyPlanningUse, "*condom*"))
+
+. gen FamilyPlanInj=(strmatch(FamilyPlanningUse, "*injec*")|strmatch(FamilyPlanningUse, "*pill*"))
+
+. gen FamilyPlanMed=(strmatch(FamilyPlanningUse, "*implant*")|strmatch(FamilyPlanningUse, "*iud*") ///
+>         |strmatch(FamilyPlanningUse, "*tubal ligation*"))
+
+. 
+. gen FamilyPlanPrefer=1 if strmatch(FamilyPlanningPreferred, "*condoms*")
+(337 missing values generated)
+
+. replace FamilyPlanPrefer=2 if strmatch(FamilyPlanningPreferred, "*implant*") ///
+>         |strmatch(FamilyPlanningPreferred, "*iud*")|strmatch(FamilyPlanningPreferred, "*tubal*") ///
+>         |strmatch(FamilyPlanningPreferred, "*vasect*")
+(75 real changes made)
+
+. replace FamilyPlanPrefer=3 if strmatch(FamilyPlanningPreferred, "*inject*") ///
+>         |strmatch(FamilyPlanningPreferred, "*pill*")
+(60 real changes made)
+
+. replace FamilyPlanPrefer=4 if strmatch(FamilyPlanningPreferred, "*moon*") ///
+>         |strmatch(FamilyPlanningPreferred, "*withdrawal*")
+(9 real changes made)
+
+. label var FamilyPlanPrefer "preferred method of family Planning"
+
+. label define Plan 1 "condoms" 2 "long-term method" 3 "short-term method" 4 "natural method", replace
+
+. label values FamilyPlanPrefer Plan
+
+. 
+. tab FamilyPlanningPreferredYN
+
+familyplann |
+ingpreferre |
+        dyn |      Freq.     Percent        Cum.
+------------+-----------------------------------
+ don't know |         67       18.98       18.98
+         no |        137       38.81       57.79
+        yes |        149       42.21      100.00
+------------+-----------------------------------
+      Total |        353      100.00
+
+. tab FamilyPlanningPreferredWhyNot //only 19 ppl answered
+
+          familyplanningpreferredwhynot |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+         friends/family advised against |          2       10.53       10.53
+         health workers advised against |          1        5.26       15.79
+                   not available at all |          9       47.37       63.16
+not available in the health center or.. |          4       21.05       84.21
+        transportation is too expensive |          3       15.79      100.00
+----------------------------------------+-----------------------------------
+                                  Total |         19      100.00
+
+. replace FamilyPlanningPreferredYN="1" if FamilyPlanningPreferredYN=="yes"
+(149 real changes made)
+
+. replace FamilyPlanningPreferredYN="0" if FamilyPlanningPreferredYN=="no"
+(137 real changes made)
+
+. replace FamilyPlanningPreferredYN="99" if FamilyPlanningPreferredYN=="don't know"
+(67 real changes made)
+
+. destring FamilyPlanningPreferredYN, replace
+FamilyPlanningPreferredYN: all characters numeric; replaced as byte
+
+. label var FamilyPlanningPreferredYN "use family planning methods"
+
+. label values FamilyPlanningPreferredYN planning
+
+. 
+. *** HIV testing
+. tab HIVDiscussYN //baseline question, no need to recode
+
+hivdiscussy |
+          n |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |          6        1.70        1.70
+        yes |        347       98.30      100.00
+------------+-----------------------------------
+      Total |        353      100.00
+
+. tab HIVTestYN 
+
+  hivtestyn |      Freq.     Percent        Cum.
+------------+-----------------------------------
+ don't know |          1        0.29        0.29
+         no |         15        4.32        4.61
+        yes |        331       95.39      100.00
+------------+-----------------------------------
+      Total |        347      100.00
+
+. replace HIVTestYN="0" if HIVTestYN=="no" // 15 ppl answered no
+(15 real changes made)
+
+. replace HIVTestYN="1" if HIVTestYN=="yes"
+(331 real changes made)
+
+. replace HIVTestYN="99" if HIVTestYN=="don't know"
+(1 real change made)
+
+. destring HIVTestYN, replace
+HIVTestYN: all characters numeric; replaced as byte
+(6 missing values generated)
+
+. label var HIVTestYN "had HIV tested"
+
+. label define test 1 "yes" 0 "no" 99 "don't know"
+
+. label values HIVTestYN test
+
+. 
+. tab HIVTestWhyNot //only 11 data pts, sample too small?
+
+                     hivtestwhynot |      Freq.     Percent        Cum.
+-----------------------------------+-----------------------------------
+                       fear/stigma |          3       27.27       27.27
+harsh treatment at health facility |          1        9.09       36.36
+                       no symptoms |          1        9.09       45.45
+                    not interested |          3       27.27       72.73
+                           too old |          1        9.09       81.82
+                            unsure |          2       18.18      100.00
+-----------------------------------+-----------------------------------
+                             Total |         11      100.00
+
+. 
+. tab HIVTestLast
+
+           hivtestlast |      Freq.     Percent        Cum.
+-----------------------+-----------------------------------
+     i've never tested |          1        0.30        0.30
+  in the last 6 months |        122       36.86       37.16
+            last month |         93       28.10       65.26
+more than 6 months ago |        115       34.74      100.00
+-----------------------+-----------------------------------
+                 Total |        331      100.00
+
+. replace HIVTestLast="1" if HIVTestLast=="last month"
+(93 real changes made)
+
+. replace HIVTestLast="2" if HIVTestLast=="in the last 6 months"
+(122 real changes made)
+
+. replace HIVTestLast="3" if HIVTestLast=="more than 6 months ago"
+(115 real changes made)
+
+. replace HIVTestLast="98" if strmatch(HIVTestLast, "*never*")
+(1 real change made)
+
+. destring HIVTestLast, replace
+HIVTestLast: all characters numeric; replaced as byte
+(22 missing values generated)
+
+. label var HIVTestLast "last time had HIV tested"
+
+. label define test_time 1 "last month" 2 "in the last 6 months" 3 "more than 6 months ago" 98 "never tested", replace
+
+. label values HIVTestLast test_time
+
+. 
+. tab HIVTestLastLocation //whats ekirala, menya?
+
+hivtestlastloca |
+           tion |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+ ekirala, menya |          1        0.31        0.31
+  health centre |        190       58.10       58.41
+home based test |         12        3.67       62.08
+mobile outreach |        124       37.92      100.00
+----------------+-----------------------------------
+          Total |        327      100.00
+
+. replace HIVTestLastLocation="1" if HIVTestLastLocation=="health centre"
+(190 real changes made)
+
+. replace HIVTestLastLocation="2" if HIVTestLastLocation=="home based test"
+(12 real changes made)
+
+. replace HIVTestLastLocation="3" if HIVTestLastLocation=="mobile outreach"
+(124 real changes made)
+
+. 
+. tab HIVTestResults
+
+hivtestresu |
+        lts |      Freq.     Percent        Cum.
+------------+-----------------------------------
+ don't know |          9        2.75        2.75
+   negative |        217       66.36       69.11
+   positive |        101       30.89      100.00
+------------+-----------------------------------
+      Total |        327      100.00
+
+. replace HIVTestResults="0" if HIVTestResults=="negative"
+(217 real changes made)
+
+. replace HIVTestResults="1" if HIVTestResults=="positive"
+(101 real changes made)
+
+. replace HIVTestResults="99" if HIVTestResults=="don't know"
+(9 real changes made)
+
+. destring HIVTestResults, replace
+HIVTestResults: all characters numeric; replaced as byte
+(26 missing values generated)
+
+. label define test 1 "positive" 0 "negative" 99 "don't know", replace
+
+. label values HIVTestResults test
+
+. 
+. *** ARV
+. tab ARTStartYN
+
+ artstartyn |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |        234       70.48       70.48
+        yes |         98       29.52      100.00
+------------+-----------------------------------
+      Total |        332      100.00
+
+. tab ARTStartWhyNot //only 4 ppl answered; sample too small
+
+              artstartwhynot |      Freq.     Percent        Cum.
+-----------------------------+-----------------------------------
+    don't want to take drugs |          1       25.00       25.00
+lack of money/transportation |          1       25.00       50.00
+              second opinion |          1       25.00       75.00
+                side effects |          1       25.00      100.00
+-----------------------------+-----------------------------------
+                       Total |          4      100.00
+
+. tab ARTStartLocation
+
+artstartlocatio |
+              n |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+  health centre |         92       93.88       93.88
+mobile outreach |          6        6.12      100.00
+----------------+-----------------------------------
+          Total |         98      100.00
+
+. replace ARTStartYN="1" if ARTStartYN=="yes"
+(98 real changes made)
+
+. replace ARTStartYN="0" if ARTStartYN=="no"
+(234 real changes made)
+
+. destring ARTStartYN, replace
+ARTStartYN: all characters numeric; replaced as byte
+(21 missing values generated)
+
+. label var ARTStartYN "have you ever started ARV"
+
+. 
+. replace ARTStartLocation="1" if ARTStartLocation=="health centre"
+(92 real changes made)
+
+. replace ARTStartLocation="2" if ARTStartLocation=="mobile outreach"
+(6 real changes made)
+
+. destring ARTStartLocation, replace
+ARTStartLocation: all characters numeric; replaced as byte
+(255 missing values generated)
+
+. label define loc 1 "health center" 2 "mobile outreach", replace
+
+. label values ARTStartLocation loc
+
+. 
+. tab ARTCurrent
+
+ artcurrent |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |          2        2.04        2.04
+        yes |         96       97.96      100.00
+------------+-----------------------------------
+      Total |         98      100.00
+
+. tab ARTCurrentWhyNot //only 1 person answered
+
+        artcurrentwhynot |      Freq.     Percent        Cum.
+-------------------------+-----------------------------------
+don't want to take drugs |          1      100.00      100.00
+-------------------------+-----------------------------------
+                   Total |          1      100.00
+
+. tab ARTLocation 
+
+        artlocation |      Freq.     Percent        Cum.
+--------------------+-----------------------------------
+         hc2 bugoma |          1        1.04        1.04
+          hc2 lambu |          1        1.04        2.08
+       hc2 mulabana |          9        9.38       11.46
+       hc3 busitema |          1        1.04       12.50
+       hc3 bwendero |         21       21.88       34.38
+        hc3 katimba |          1        1.04       35.42
+         hc3 mugoye |         14       14.58       50.00
+      hc4 kalangala |         18       18.75       68.75
+         hc4 kinoni |          1        1.04       69.79
+    masaka hospital |          7        7.29       77.08
+    mobile outreach |         17       17.71       94.79
+        taso masaka |          1        1.04       95.83
+uganda cares masaka |          4        4.17      100.00
+--------------------+-----------------------------------
+              Total |         96      100.00
+
+. replace ARTCurrent="0" if ARTCurrent=="no"
+(2 real changes made)
+
+. replace ARTCurrent="1" if ARTCurrent=="yes"
+(96 real changes made)
+
+. destring ARTCurrent, replace
+ARTCurrent: all characters numeric; replaced as byte
+(255 missing values generated)
+
+. label var ARTCurrent "are you currently on ARV"
+
+. 
+. replace ARTLocation="health center" if strmatch(ARTLocation, "*hc*")
+(67 real changes made)
+
+. replace ARTLocation="hospital" if strmatch(ARTLocation, "*hospital*")
+(7 real changes made)
+
+. 
+. tab ARTLocationType
+
+artlocationtype |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+  health centre |         67       69.79       69.79
+       hospital |          7        7.29       77.08
+mobile outreach |         17       17.71       94.79
+     ngo clinic |          5        5.21      100.00
+----------------+-----------------------------------
+          Total |         96      100.00
+
+. tab ARTLocationReason
+
+                      artlocationreason |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                       close to my home |         57       59.38       59.38
+close to my home,services are free or.. |          3        3.13       62.50
+close to my home,staff is friendly an.. |          1        1.04       63.54
+privacy. i don't want people i know t.. |          2        2.08       65.63
+                       refused transfer |          1        1.04       66.67
+  services are better than other places |          1        1.04       67.71
+          services are free or low cost |         14       14.58       82.29
+services are free or low cost,close t.. |          1        1.04       83.33
+services are free or low cost,service.. |          1        1.04       84.38
+services are free or low cost,staff i.. |          2        2.08       86.46
+services are free or low cost,started.. |          2        2.08       88.54
+        staff is friendly and welcoming |          2        2.08       90.63
+staff is friendly and welcoming,close.. |          1        1.04       91.67
+staff is friendly and welcoming,servi.. |          1        1.04       92.71
+staff is friendly and welcoming,servi.. |          1        1.04       93.75
+staff is friendly and welcoming,start.. |          1        1.04       94.79
+                started treatment there |          5        5.21      100.00
+----------------------------------------+-----------------------------------
+                                  Total |         96      100.00
+
+. gen ARVLocReasonStaff=(strmatch(ARTLocationReason, "*friendly*"))
+
+. gen ARVLocReasonDist=(strmatch(ARTLocationReason, "*close to*"))
+
+. gen ARVLocReasonCost=(strmatch(ARTLocationReason, "*free ot low*"))
+
+. gen ARVLocReasonPrivacy=(strmatch(ARTLocationReason, "*privacy*"))
+
+. gen ARVLocReasonService=(strmatch(ARTLocationReason, "*better than*"))
+
+. gen ARVLocReasonOther=(strmatch(ARTLocationReason, "*refused*")|strmatch(ARTLocationReason, "*started treatment*"))
+
+. label var ARVLocReasonStaff "staff are friendly and welcoming"
+
+. label var ARVLocReasonDist "close to home"
+
+. label var ARVLocReasonCost "treatment is free or low cost"
+
+. label var ARVLocReasonPrivacy "I don't want people to see me"
+
+. label var ARVLocReasonService "services are better"
+
+. label var ARVLocReasonOther "other reasons"
+
+. 
+. tab ARTMissedYN
+
+artmissedyn |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |         52       53.06       53.06
+        yes |         46       46.94      100.00
+------------+-----------------------------------
+      Total |         98      100.00
+
+. tab ARTMissedReason //only 44 data pts; sample too small
+
+                        artmissedreason |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                      forgot to take it |         11       25.00       25.00
+               lack of money/ transport |          3        6.82       31.82
+                                  other |          2        4.55       36.36
+                  ran out of medication |          2        4.55       40.91
+ran out of medication,was far from wh.. |          1        2.27       43.18
+                           side effects |          5       11.36       54.55
+side effects,did not understand instr.. |          1        2.27       56.82
+            side effects,no food to eat |          3        6.82       63.64
+was far from where i store the medica.. |         14       31.82       95.45
+was far from where i store the medica.. |          1        2.27       97.73
+was far from where i store the medica.. |          1        2.27      100.00
+----------------------------------------+-----------------------------------
+                                  Total |         44      100.00
+
+. replace ARTMissedYN="1" if ARTMissedYN=="yes"
+(46 real changes made)
+
+. replace ARTMissedYN="0" if ARTMissedYN=="no"
+(52 real changes made)
+
+. destring ARTMissedYN, replace
+ARTMissedYN: all characters numeric; replaced as byte
+(255 missing values generated)
+
+. 
+. *** viral load
+. tab ViralLoadYN
+
+viralloadyn |      Freq.     Percent        Cum.
+------------+-----------------------------------
+ don't know |          5        4.95        4.95
+         no |         27       26.73       31.68
+        yes |         69       68.32      100.00
+------------+-----------------------------------
+      Total |        101      100.00
+
+. replace ViralLoadYN="1" if ViralLoadYN =="yes"
+(69 real changes made)
+
+. replace ViralLoadYN ="0" if ViralLoadYN =="no"
+(27 real changes made)
+
+. replace ViralLoadYN ="99" if ViralLoadYN =="don't know"
+(5 real changes made)
+
+. destring ViralLoadYN, replace
+ViralLoadYN: all characters numeric; replaced as byte
+(252 missing values generated)
+
+. label define load 1 "yes" 0 "no" 99 "don't know", replace
+
+. label values ViralLoadYN load
+
+. 
+. tab ViralLoadLast
+
+         viralloadlast |      Freq.     Percent        Cum.
+-----------------------+-----------------------------------
+6 months to 1 year ago |         10       13.89       13.89
+  in the last 6 months |         59       81.94       95.83
+  more than 1 year ago |          3        4.17      100.00
+-----------------------+-----------------------------------
+                 Total |         72      100.00
+
+. label var ViralLoadLast "last time you tested viral load"
+
+. replace ViralLoadLast="1" if ViralLoadLast=="in the last 6 months"
+(59 real changes made)
+
+. replace ViralLoadLast="2" if ViralLoadLast=="6 months to 1 year ago"
+(10 real changes made)
+
+. replace ViralLoadLast="3" if ViralLoadLast=="more than 1 year ago"
+(3 real changes made)
+
+. destring ViralLoadLast, replace
+ViralLoadLast: all characters numeric; replaced as byte
+(281 missing values generated)
+
+. label define testing 1 "in the last 6 months" 2 "6 months or 1 year ago" 3 "more than 1 year ago", replace
+
+. label values ViralLoadLast testing 
+
+. 
+. tab ViralLoadLocation //looks pretty clean
+
+viralloadlocati |
+             on |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+  health centre |         60       83.33       83.33
+mobile outreach |         12       16.67      100.00
+----------------+-----------------------------------
+          Total |         72      100.00
+
+. tab ViralLoadResults
+
+viralloadre |
+      sults |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |         28       38.89       38.89
+        yes |         44       61.11      100.00
+------------+-----------------------------------
+      Total |         72      100.00
+
+. replace ViralLoadResults="1" if ViralLoadResults=="yes"
+(44 real changes made)
+
+. replace ViralLoadResults="0" if ViralLoadResults=="no"
+(28 real changes made)
+
+. destring ViralLoadResults, replace
+ViralLoadResults: all characters numeric; replaced as byte
+(281 missing values generated)
+
+. label var ViralLoadResults "did you receive the results from viral load test"
+
+. 
+. tab ViralLoadTime
+
+viralloadtime |      Freq.     Percent        Cum.
+--------------+-----------------------------------
+ 1 to 2 weeks |          1        2.27        2.27
+1 to 3 months |         15       34.09       36.36
+ 3 to 4 weeks |         10       22.73       59.09
+over 3 months |         17       38.64       97.73
+     same day |          1        2.27      100.00
+--------------+-----------------------------------
+        Total |         44      100.00
+
+. label var ViralLoadTime "how long did it take to get the results back"
+
+. replace ViralLoadTime="1" if ViralLoadTime=="same day"
+(1 real change made)
+
+. replace ViralLoadTime="2" if ViralLoadTime=="1 to 2 weeks"
+(1 real change made)
+
+. replace ViralLoadTime="3" if ViralLoadTime=="3 to 4 weeks"
+(10 real changes made)
+
+. replace ViralLoadTime="4" if ViralLoadTime=="1 to 3 months"
+(15 real changes made)
+
+. replace ViralLoadTime="5" if ViralLoadTime=="over 3 months"
+(17 real changes made)
+
+. destring ViralLoadTime, replace
+ViralLoadTime: all characters numeric; replaced as byte
+(309 missing values generated)
+
+. label define time 1 "same day" 2 "1 to 2 weeks" 3 "3 to 4 weeks" 4 "1 to 3 months" ///
+>         5 "over 3 months", replace
+
+. label values ViralLoadTime time
+
+. 
+. tab ViralLoadExplain 
+
+viralloadex |
+      plain |      Freq.     Percent        Cum.
+------------+-----------------------------------
+         no |          2        4.55        4.55
+        yes |         42       95.45      100.00
+------------+-----------------------------------
+      Total |         44      100.00
+
+. label var ViralLoadExplain "Did the health worker explain the results of the viral load test well"
+
+. replace ViralLoadExplain="1" if ViralLoadExplain=="yes"
+(42 real changes made)
+
+. replace ViralLoadExplain="0" if ViralLoadExplain=="no"
+(2 real changes made)
+
+. destring ViralLoadExplain, replace
+ViralLoadExplain: all characters numeric; replaced as byte
+(309 missing values generated)
+
+. 
+. tab HIVTreatments //this question is not of analytical interest
+
+                          hivtreatments |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+anti-retroviral therapy - art (tick i.. |        101       31.76       31.76
+anti-retroviral therapy - art (tick i.. |          1        0.31       32.08
+anti-retroviral therapy - art (tick i.. |          1        0.31       32.39
+anti-retroviral therapy - art (tick i.. |          1        0.31       32.70
+anti-retroviral therapy - art (tick i.. |          1        0.31       33.02
+anti-retroviral therapy - art (tick i.. |        104       32.70       65.72
+anti-retroviral therapy - art (tick i.. |          3        0.94       66.67
+anti-retroviral therapy- art (tick if.. |          1        0.31       66.98
+                        aspirin,septrin |          1        0.31       67.30
+                        herbal medicine |          1        0.31       67.61
+            mosquito nets and jerrycans |          1        0.31       67.92
+                          none / tewali |         74       23.27       91.19
+                                panadol |          1        0.31       91.51
+                                septrin |         22        6.92       98.43
+                  tablets (unspecified) |          4        1.26       99.69
+                   tablets(unspecified) |          1        0.31      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        318      100.00
+
+. 
+. *** EQ-5D-3L self-assessed health
+. tab EQMobility
+
+                           eqmobility |      Freq.     Percent        Cum.
+--------------------------------------+-----------------------------------
+                 i am confined to bed |          5        1.43        1.43
+  i have no problems in walking about |        280       80.23       81.66
+i have some problems in walking about |         64       18.34      100.00
+--------------------------------------+-----------------------------------
+                                Total |        349      100.00
+
+. tab EQSelfCare
+
+                             eqselfcare |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+    i am unable to wash or dress myself |          1        0.29        0.29
+      i have no problems with self-care |        327       93.97       94.25
+i have some problems washing or dress.. |         20        5.75      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        348      100.00
+
+. tab EQActivities
+
+                           eqactivities |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+  i am unable to do my usual activities |          3        0.86        0.86
+i have no problems doing my usual act.. |        294       84.00       84.86
+i have some problems doing my usual a.. |         53       15.14      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        350      100.00
+
+. tab EQPain
+
+                            eqpain |      Freq.     Percent        Cum.
+-----------------------------------+-----------------------------------
+ i have extreme pain or discomfort |         10        2.86        2.86
+i have moderate pain or discomfort |        148       42.29       45.14
+      i have no pain or discomfort |        192       54.86      100.00
+-----------------------------------+-----------------------------------
+                             Total |        350      100.00
+
+. tab EQAnxiety
+
+                         eqanxiety |      Freq.     Percent        Cum.
+-----------------------------------+-----------------------------------
+ i am extremely anxious or worried |         28        7.98        7.98
+i am moderately anxious or worried |        132       37.61       45.58
+       i am not anxious or worried |        191       54.42      100.00
+-----------------------------------+-----------------------------------
+                             Total |        351      100.00
+
+. tab EQScale
+
+    eqscale |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |          1        0.28        0.28
+          5 |          1        0.28        0.57
+         20 |          4        1.13        1.70
+         30 |          4        1.13        2.83
+         36 |          1        0.28        3.12
+         40 |         19        5.38        8.50
+         45 |          3        0.85        9.35
+         46 |          1        0.28        9.63
+         50 |         41       11.61       21.25
+         55 |          3        0.85       22.10
+         60 |         39       11.05       33.14
+         65 |          9        2.55       35.69
+         70 |         52       14.73       50.42
+         75 |         13        3.68       54.11
+         78 |          2        0.57       54.67
+         79 |          1        0.28       54.96
+         80 |         66       18.70       73.65
+         85 |         10        2.83       76.49
+         89 |          1        0.28       76.77
+         90 |         23        6.52       83.29
+         92 |          1        0.28       83.57
+         95 |         15        4.25       87.82
+         98 |         11        3.12       90.93
+         99 |          6        1.70       92.63
+        100 |         26        7.37      100.00
+------------+-----------------------------------
+      Total |        353      100.00
+
+. 
+. label var EQSelfCare "able to wash or dress myself"
+
+. label var EQActivities "able to do usual activities"
+
+. label var EQScale "overall health"
+
+. 
+. label define scale 1 "with great difficulty" 2 "with some difficulty" 3 "no difficulty", replace
+
+. foreach var in Mobility SelfCare Activities {
+  2.         replace EQ`var'="3" if strmatch(EQ`var', "*no prob*")
+  3.         replace EQ`var'="2" if strmatch(EQ`var', "*some prob*")
+  4.         replace EQ`var'="1" if strmatch(EQ`var', "*unable to*")|strmatch(EQ`var', "*confined*")
+  5.         destring EQ`var', replace
+  6.         label values EQ`var' scale
+  7. }
+(280 real changes made)
+(64 real changes made)
+(5 real changes made)
+EQMobility: all characters numeric; replaced as byte
+(4 missing values generated)
+(327 real changes made)
+(20 real changes made)
+(1 real change made)
+EQSelfCare: all characters numeric; replaced as byte
+(5 missing values generated)
+(294 real changes made)
+(53 real changes made)
+(3 real changes made)
+EQActivities: all characters numeric; replaced as byte
+(3 missing values generated)
+
+. .
+
+. label define scale2 1 "extremely" 2 "somewhat" 3 "no", replace
+
+. foreach var in Pain Anxiety {
+  2.         replace EQ`var'="3" if strmatch(EQ`var', "* no*")
+  3.         replace EQ`var'="2" if strmatch(EQ`var', "*moderate*")
+  4.         replace EQ`var'="1" if strmatch(EQ`var', "*extreme*")
+  5.         destring EQ`var', replace
+  6.         label values EQ`var' scale2
+  7. }
+(192 real changes made)
+(148 real changes made)
+(10 real changes made)
+EQPain: all characters numeric; replaced as byte
+(3 missing values generated)
+(191 real changes made)
+(132 real changes made)
+(28 real changes made)
+EQAnxiety: all characters numeric; replaced as byte
+(2 missing values generated)
+
+. .
+
+. 
+. gen EQ=(EQScale<20)
+
+. replace EQ=2 if EQScale<40 & EQScale>=20
+(9 real changes made)
+
+. replace EQ=3 if EQScale<60 & EQScale>=40
+(67 real changes made)
+
+. replace EQ=4 if EQScale<80 & EQScale>=60
+(116 real changes made)
+
+. replace EQ=5 if EQScale<100 & EQScale>=80
+(133 real changes made)
+
+. label var EQ "EQ scale self assessment in quintiles"
+
+. 
+. compress
+  variable female was float now byte
+  variable MonthsAwayJan was float now byte
+  variable MonthsAwayFeb was float now byte
+  variable MonthsAwayMar was float now byte
+  variable MonthsAwayApr was float now byte
+  variable MonthsAwayMay was float now byte
+  variable MonthsAwayJune was float now byte
+  variable MonthsAwayJuly was float now byte
+  variable MonthsAwayAug was float now byte
+  variable MonthsAwaySep was float now byte
+  variable MonthsAwayOct was float now byte
+  variable MonthsAwayNov was float now byte
+  variable MonthsAwayDec was float now byte
+  variable MonthsAwayFishing was float now byte
+  variable MonthsAwaySocial was float now byte
+  variable MonthsAwayFarming was float now byte
+  variable MonthsAwayOtherWork was float now byte
+  variable MonthsAwayHealth was float now byte
+  variable MonthsAwayReligion was float now byte
+  variable IncomeFarm was float now byte
+  variable IncomeFish was float now byte
+  variable IncomeSB was float now byte
+  variable IncomeCasual was float now byte
+  variable IncomeCharcoal was float now byte
+  variable IncomeGovt was float now byte
+  variable IncomeNW was float now byte
+  variable HealthcareLocReason1 was float now byte
+  variable HealthcareLocReason2 was float now byte
+  variable HealthcareLocReason3 was float now byte
+  variable HealthcareLocReason4 was float now byte
+  variable HealthcareLocReason5 was float now byte
+  variable MissHealthcareCost was float now byte
+  variable MissHealthcareClinic was float now byte
+  variable MissHealthcareSelf was float now byte
+  variable MissHealthcareTransport was float now byte
+  variable FamilyPlanNatural was float now byte
+  variable FamilyPlanCondom was float now byte
+  variable FamilyPlanInj was float now byte
+  variable FamilyPlanMed was float now byte
+  variable FamilyPlanPrefer was float now byte
+  variable ARVLocReasonStaff was float now byte
+  variable ARVLocReasonDist was float now byte
+  variable ARVLocReasonCost was float now byte
+  variable ARVLocReasonPrivacy was float now byte
+  variable ARVLocReasonService was float now byte
+  variable ARVLocReasonOther was float now byte
+  variable EQ was float now byte
+  variable HealthcareLocationFrequent was str42 now str20
+  variable HealthcareMissed was str3 now str1
+  variable HIVTestLastLocation was str15 now str14
+  (58,598 bytes saved)
+
+. save HAC-pop-health-survey_clean.dta, replace
+file HAC-pop-health-survey_clean.dta saved
+
+. export delimited HAC-pop-health-survey_clean.csv, replace
+file HAC-pop-health-survey_clean.csv saved
+
+. 
+. *** part 2 
+. * merge which villages had access to HAC
+. import delimited raw_data\villages_hasHAC.csv, clear
+(2 vars, 10 obs)
+
+. rename village Village
+
+. merge 1:m Village using HAC-pop-health-survey_clean.dta
+(note: variable Village was str10, now str29 to accommodate using data's values)
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             1
+        from master                         0  (_merge==1)
+        from using                          1  (_merge==2)
+
+    matched                               352  (_merge==3)
+    -----------------------------------------
+
+. drop if _mer!=3
+(1 observation deleted)
+
+. drop _merge
+
+. drop Gender MonthsAwayWhich MonthsAwayReasons MonthsAwayReasonsOther ///
+>         IncomeSources IncomeSourcesOther HealthcareLocationFrequentReason ///
+>         HealthcareMissedReason FamilyPlanningPreferred FamilyPlanningUse ///
+>         ARTLocationReason //drop the vars already recoded
+
+. 
+. compress
+  variable Village was str29 now str10
+  variable HealthcareLastLocation was str36 now str16
+  (13,728 bytes saved)
+
+. save HAC-pop-health-survey_analytical.dta, replace
+file HAC-pop-health-survey_analytical.dta saved
+
+. export delimited HAC-pop-health-survey_analytical.csv, replace
+file HAC-pop-health-survey_analytical.csv saved
+
+. 
+. log close
+      name:  <unnamed>
+       log:  H:\apps\xp\desktop\HAC-pop-health-survey\HAC-pop-health-survey_data_cleaning_log.log
+  log type:  text
+ closed on:  13 Aug 2018, 14:44:11
+-----------------------------------------------------------------------------------------------------------------------------------------
